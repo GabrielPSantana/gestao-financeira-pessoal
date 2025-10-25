@@ -72,7 +72,7 @@ class CategoryController extends Controller
             //remove last image
             Store::disk('public')->delete($category->image);
         }
-        $request_validated = $request->file('image')->store('categories', 'public')
+        $request_validated = $request->file('image')->store('categories', 'public');
         
         $category->update($request_validated);
         
