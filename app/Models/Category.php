@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
@@ -13,7 +14,7 @@ class Category extends Model
         'image',
     ];
 
-    protected $cats = [
+    protected $casts = [ // ← CORRIGIDO
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
