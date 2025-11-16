@@ -2,91 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $categories = Category::latest()->get();
 
-        return Inertia::render('category', [
+        return Inertia::render('Category/Index', [
             'categories' => $categories
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        return Inertia::render('category');
+        return Inertia::render('Category/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreCategoryRequest $request)
     {
-        $request_validated = $request->validate();
+        $validated = $request->validated();
 
-        Category::create($request_validated);
+        // upload da imagem caso exista
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')
+                ->store('categories', 'public');
+        }
+
+        Category::create($validated);
 
         return redirect()->route('categories.index')
-            ->with('success', 'Categoria criado com sucesso!');
+            ->with('success', 'Categoria criada com sucesso!');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Category $category)
     {
-        return Inertia::render('category', [
+        return Inertia::render('Category/Show', [
             'category' => $category
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(UpdateCategoryRequest $request)
+    public function edit(Category $category)
     {
-        return Inertia::render('category', [
+        return Inertia::render('Category/Edit', [
             'category' => $category
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $request_validated = $request->validate();
+        $validated = $request->validated();
 
-        if($request_validated->hasFile('image')){
-            //remove last image
-            Store::disk('public')->delete($category->image);
+        // Se enviou imagem nova
+        if ($request->hasFile('image')) {
+
+            // Remove imagem antiga
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+            
+            // Salva imagem nova
+            $validated['image'] = $request->file('image')
+                ->store('categories', 'public');
         }
-        $request_validated = $request->file('image')->store('categories', 'public');
-        
-        $category->update($request_validated);
-        
+
+        $category->update($validated);
+
         return redirect()->route('categories.index')
             ->with('success', 'Categoria atualizada com sucesso!');
-    
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Category $category)
     {
-        if($category->image) {
+        if ($category->image) {
             Storage::disk('public')->delete($category->image);
         }
 
