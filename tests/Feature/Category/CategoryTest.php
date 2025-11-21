@@ -21,3 +21,10 @@ test('index returns a list of categories', function(){
     );
 });
 
+test('create returns inertia view', function(){
+    $response = $this->get(route('categories.create'));
+
+    $response->assertInertia(fn ($page) => 
+        $page->component('Category/Create')
+    );
+});
